@@ -1,8 +1,28 @@
+# Виртуальное окружение
 venv/
+
+# Кэш Python
 __pycache__/
 *.pyc
+*.pyo
+
+# БД
 instance/
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
 .vscode/
 .idea/
-*.db
+
+# Секреты
 .env
+
+# Логи
+*.log
+
+# Кэш инструментов
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
