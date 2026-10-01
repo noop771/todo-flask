@@ -18,27 +18,32 @@
             </div>
         </div>
 
-        <!-- Форма добавления (пока не работает) -->
-        <form class="mb-4">
+        <!-- Форма добавления -->
+        <form class="mb-4" id="add-form">
             <div class="input-group">
                 <input type="text" id="task-input" class="form-control" placeholder="Что нужно сделать?">
-                <button class="btn btn-primary" type="button" id="add-btn">Добавить</button>
+                <button class="btn btn-primary" type="submit" id="add-btn">Добавить</button>
             </div>
         </form>
 
         <!-- Список задач -->
-        {% if tasks %}
-            <ul class="list-group">
-                {% for task in tasks %}
-                    <li class="list-group-item">
+        <ul class="list-group" id="task-list">
+            {% for task in tasks %}
+                <li class="list-group-item d-flex justify-content-between align-items-center" data-id="{{ task.id }}">
+                    <span class="task-text" style="cursor: pointer; {% if task.done %}text-decoration: line-through; color: gray;{% endif %}">
                         {{ task.text }}
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p class="text-muted">Пока задач нет. Добавь первую!</p>
+                    </span>
+                    <button class="btn btn-sm btn-outline-danger delete-btn">✕</button>
+                </li>
+            {% endfor %}
+        </ul>
+
+        {% if not tasks %}
+            <p class="text-muted" id="empty-msg">Пока задач нет</p>
         {% endif %}
 
     </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>
