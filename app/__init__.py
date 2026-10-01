@@ -18,7 +18,7 @@ def create_app(config_class=Config):
 
     db.init_app(app)
     login_manager.init_app(app)
-    login_manager.login_view = "auth.login" #auth пока не существует
+    login_manager.login_view = "auth.login"
 
     # Импорт моделей — внутри функции, чтобы не было циклического импорта
     from app import models    # noqa: F401
@@ -26,6 +26,9 @@ def create_app(config_class=Config):
     # Регистрируем blueprint
     from app.routes.auth import bp as auth_bp
     app.register_blueprint(auth_bp)
+
+    from app.routes.tasks import bp as tasks_bp
+    app.register_blueprint(tasks_bp)
 
 
     return app
