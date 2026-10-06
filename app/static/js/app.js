@@ -7,37 +7,67 @@ const API = {
     add:    '/api/add',
     toggle: (id) => `/api/toggle/${id}`,
     delete: (id) => `/api/delete/${id}`,
+    stats:  '/api/stats',
 };
+
+
+// ============================================================
+// Создание DOM-элемента задачи
+// ============================================================
+
+function createTaskElement(task) {
+    const li = document.createElement('li');
+    li.className = 'list-group-item d-flex align-items-center gap-2';
+    li.dataset.id = task.id;
+
+    // Кнопка-toggle
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'btn btn-sm toggle-btn';
+    updateToggleButton(toggleBtn, task.done);
+
+    // Текст задачи
+    const span = document.createElement('span');
+    span.className = 'task-text flex-grow-1';
+    span.textContent = task.text;
+    updateTaskText(span, task.done);
+
+    // Кнопка удаления
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'btn btn-sm btn-outline-danger delete-btn';
+    deleteBtn.textContent = '✕';
+
+    li.appendChild(toggleBtn);
+    li.appendChild(span);
+    li.appendChild(deleteBtn);
+    return li;
+}
+
+
+function updateToggleButton(btn, done) {
+    if (done) {
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-success');
+        btn.textContent = '✅';
+    } else {
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-outline-secondary');
+        btn.textContent = '⬜';
+    }
+}
+
+
+function updateTaskText(span, done) {
+    if (done) {
+        span.classList.add('text-decoration-line-through', 'text-muted');
+    } else {
+        span.classList.remove('text-decoration-line-through', 'text-muted');
+    }
+}
 
 
 // ============================================================
 // Утилиты
 // ============================================================
-
-function createTaskElement(task) {
-    const li = document.createElement('li');
-    li.className = 'list-group-item d-flex justify-content-between align-items-center';
-    li.dataset.id = task.id;
-
-    const span = document.createElement('span');
-    span.className = 'task-text';
-    span.style.cursor = 'pointer';
-    span.textContent = task.text;
-
-    if (task.done) {
-        span.style.textDecoration = 'line-through';
-        span.style.color = 'gray';
-    }
-
-    const btn = document.createElement('button');
-    btn.className = 'btn btn-sm btn-outline-danger delete-btn';
-    btn.textContent = '✕';
-
-    li.appendChild(span);
-    li.appendChild(btn);
-    return li;
-}
-
 
 function removeEmptyMessage() {
     const msg = document.getElementById('empty-msg');
@@ -54,6 +84,24 @@ function checkEmpty() {
         p.textContent = 'Пока задач нет';
         list.parentNode.appendChild(p);
     }
+}
+
+
+// ============================================================
+// Статистика
+// ============================================================
+
+async function updateStats() {
+    const response = await fetch(API.stats);
+    if (!response.ok) return;
+
+    const data = await response.json();
+
+    document.getElementById('stat-total').textContent = data.total;
+    document.getElementById('stat-completed').textContent = data.completed;
+    document.getElementById('stat-active').textContent = data.active;
+    document.getElementById('stat-rate').textContent = data.completion_rate;
+    document.getElementById('stat-progress').style.width = data.completion_rate + '%';
 }
 
 
@@ -79,6 +127,8 @@ async function addTask(text) {
 
     removeEmptyMessage();
     document.getElementById('task-list').appendChild(li);
+
+    await updateStats();
 }
 
 
@@ -89,15 +139,13 @@ async function toggleTask(id) {
     const data = await response.json();
 
     const li = document.querySelector(`[data-id="${id}"]`);
+    const btn = li.querySelector('.toggle-btn');
     const span = li.querySelector('.task-text');
 
-    if (data.done) {
-        span.style.textDecoration = 'line-through';
-        span.style.color = 'gray';
-    } else {
-        span.style.textDecoration = '';
-        span.style.color = '';
-    }
+    updateToggleButton(btn, data.done);
+    updateTaskText(span, data.done);
+
+    await updateStats();
 }
 
 
@@ -108,18 +156,23 @@ async function deleteTask(id) {
     const li = document.querySelector(`[data-id="${id}"]`);
     li.remove();
     checkEmpty();
+
+    await updateStats();
 }
 
 
 // ============================================================
-// Инициализация — обработчики событий
+// Инициализация
 // ============================================================
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // 1. Форма добавления
+    // Обновляем статистику при загрузке
+    updateStats();
+
+    // Форма добавления
     document.getElementById('add-form').addEventListener('submit', async (e) => {
-        e.preventDefault();    // не перезагружать страницу!
+        e.preventDefault();
 
         const input = document.getElementById('task-input');
         const text = input.value.trim();
@@ -130,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
         input.focus();
     });
 
-    // 2. Клик по списку (делегирование событий)
+    // Клик по списку (делегирование)
     document.getElementById('task-list').addEventListener('click', (e) => {
         const li = e.target.closest('li[data-id]');
         if (!li) return;
@@ -139,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (e.target.classList.contains('delete-btn')) {
             deleteTask(id);
-        } else if (e.target.classList.contains('task-text')) {
+        } else if (e.target.classList.contains('toggle-btn') || e.target.classList.contains('task-text')) {
             toggleTask(id);
         }
     });

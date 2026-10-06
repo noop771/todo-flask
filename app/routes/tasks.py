@@ -1,7 +1,5 @@
 """Роуты для работы с задачами."""
 
-from flask import Blueprint, render_template
-from flask_login import login_required, current_user
 from flask import Blueprint, render_template, jsonify, request
 from flask_login import login_required, current_user
 
@@ -69,4 +67,21 @@ def api_delete(task_id):
     db.session.commit()
 
     return jsonify({'ok': True})
+
+@bp.route('/api/stats')
+@login_required
+def api_stats():
+    """Статистика по задачам пользователя."""
+    total = Task.query.filter_by(user_id=current_user.id).count()
+    completed = Task.query.filter_by(user_id=current_user.id, done=True).count()
+    active = total - completed
+    
+    rate = round(completed / total * 100, 1) if total > 0 else 0.0
+    
+    return jsonify({
+        'total': total,
+        'completed': completed,
+        'active': active,
+        'completion_rate': rate,
+    })
 

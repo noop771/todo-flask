@@ -1,0 +1,35 @@
+/* Отступ внизу, чтобы контент не перекрывался полосой статистики */
+body {
+    padding-bottom: 100px;
+}
+
+/* Полоса статистики внизу экрана */
+.stats-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-top: 1px solid #dee2e6;
+    padding: 12px 0;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+    z-index: 100;
+}
+
+/* Кнопка-toggle — фиксированная ширина, чтобы не «прыгала» */
+.toggle-btn {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* Текст задачи — курсор-указатель */
+.task-text {
+    cursor: pointer;
+}
