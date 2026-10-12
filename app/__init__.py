@@ -12,7 +12,7 @@ login_manager = LoginManager()
 
 
 def create_app(config_class=Config):
-    """Создание и настройка экземпляра приложения"""
+    """Создаёт и настраивает экземпляр Flask-приложения."""
     app = Flask(__name__)
     app.config.from_object(config_class)
 
@@ -20,15 +20,14 @@ def create_app(config_class=Config):
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
 
-    # Импорт моделей — внутри функции, чтобы не было циклического импорта
     from app import models    # noqa: F401
-
-    # Регистрируем blueprint
     from app.routes.auth import bp as auth_bp
-    app.register_blueprint(auth_bp)
-
     from app.routes.tasks import bp as tasks_bp
+    app.register_blueprint(auth_bp)
     app.register_blueprint(tasks_bp)
 
+    # Создаём таблицы при старте приложения
+    with app.app_context():
+        db.create_all()
 
     return app
